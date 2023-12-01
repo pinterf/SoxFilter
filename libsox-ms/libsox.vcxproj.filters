@@ -1,0 +1,498 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Format handles and utils">
+      <UniqueIdentifier>{bd46b5e4-1d7d-4ba8-8c0f-1b401caaa007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Format handles and utils">
+      <UniqueIdentifier>{1954c879-c3f8-437c-9c5e-8e29d1ed50ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Effects">
+      <UniqueIdentifier>{0a990329-41a3-42ef-9295-c6a924c6c30c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Effects">
+      <UniqueIdentifier>{fc14296c-761e-4f29-b24f-d3ba38d46d60}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="adpcms.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="aiff.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="cvsd.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="cvsdfilt.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="formats.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="g72x.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="g711.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="raw.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="sox_i.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="soxomp.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="vox.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="xmalloc.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="band.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="biquad.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="compandt.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="dft_filter.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="dither.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="effects.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="fft4g.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="fifo.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="ladspa.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="mcompand_xover.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="noisered.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="rate_filters.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="rate_half_fir.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="rate_poly_fir.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="rate_poly_fir0.h">
+      <Filter>Header Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="id3.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ima_rw.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="adpcm.h">
+      <Filter>Header Files\Format handles and utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\custom-files\soxconfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\libsox\adpcms.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\aiff.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\cvsd.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\formats.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\formats_i.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\g72x.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\g711.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\g721.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\g723_24.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\g723_40.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\getopt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\libsox.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\libsox_i.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\raw.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\skelform.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\sox-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\util.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\vox.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\xmalloc.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\bend.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\biquad.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\biquads.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\chorus.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\compand.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\compandt.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\contrast.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\dcshift.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\delay.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\dft_filter.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\dither.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\divide.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\downsample.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\earwax.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\echo.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\echos.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\effects.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\effects_i.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\effects_i_dsp.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\fade.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\fft4g.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\fir.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\firfit.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\flanger.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\gain.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\hilbert.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\input.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\ladspa.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\loudness.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\mcompand.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\noiseprof.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\noisered.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\output.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\overdrive.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\pad.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\phaser.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\rate.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\remix.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\repeat.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\reverb.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\reverse.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\silence.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\sinc.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\skeleff.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\speed.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\splice.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\stat.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\stats.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\stretch.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\swap.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\synth.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\tempo.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\tremolo.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\trim.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\upsample.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\vad.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\voc.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\vol.c">
+      <Filter>Source Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\aifc-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\aiff-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\al-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\ima-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\smp.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\sounder.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\s1-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\s2-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\s3-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\s4-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\u1-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\u2-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\u3-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\u4-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\ul-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\vox-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\la-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\lu-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\maud.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\nulfile.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\sf.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\sphere.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\id3.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\wav.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\wve.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\xa.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\ima_rw.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\tx16w.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\adpcm.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\au.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\avr.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\cdr.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\cvsd-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\dat.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\dvms-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\f4-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\f8-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\gsrt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\hcom.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\htk.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\prc.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\raw-fmt.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\8svx.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libsox\soundtool.c">
+      <Filter>Source Files\Format handles and utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
