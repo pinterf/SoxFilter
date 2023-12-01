@@ -1,0 +1,355 @@
+Check also:
+https://manpages.ubuntu.com/manpages/lunar/en/man1/sox.1.html#effects
+
+Effect #1
+allpass
+frequency width[h|k|q|o]
+
+Effect #2
+band
+[-n] center [width[h|k|q|o]]
+
+Effect #3
+bandpass
+[-c] frequency width[h|k|q|o]
+
+Effect #4
+bandreject
+frequency width[h|k|q|o]
+
+Effect #5
+bass
+gain [frequency(100) [width[s|h|k|q|o]](0.5s)]
+
+Effect #6
+bend
+[-f frame-rate(25)] [-o over-sample(16)] {start,cents,end}
+
+Effect #7
+biquad
+b0 b1 b2 a0 a1 a2
+
+Effect #8
+chorus
+gain-in gain-out delay decay speed depth [ -s | -t ]
+
+Effect #9
+channels
+number
+
+Effect #10
+compand
+attack1,decay1{,attack2,decay2} [soft-knee-dB:]in-dB1[,out-dB1]{,in-dB2,out-dB2} [gain [initial-volume-dB [delay]]]
+	where {} means optional and repeatable and [] means optional.
+	dB values are floating point or -inf'; times are in seconds.
+
+Effect #11
+contrast
+[enhancement (75)]
+
+Effect #12
+dcshift
+shift [ limitergain ]
+	The peak limiter has a gain much less than 1.0 (ie 0.05 or 0.02) which
+	is only used on peaks to prevent clipping. (default is no limiter)
+
+Effect #13
+deemph
+
+
+Effect #14
+delay
+{position}
+
+Effect #15
+dither
+[-S|-s|-f filter] [-a] [-p precision]
+  (none)   Use TPDF
+  -S       Use sloped TPDF (without noise shaping)
+  -s       Shape noise (with shibata filter)
+  -f name  Set shaping filter to one of: lipshitz, f-weighted,
+           modified-e-weighted, improved-e-weighted, gesemann,
+           shibata, low-shibata, high-shibata.
+  -a       Automatically turn on & off dithering as needed (use with caution!)
+  -p bits  Override the target sample precision
+
+Effect #16
+divide
+
+
+Effect #17
+downsample
+[factor (2)]
+
+Effect #18
+earwax
+
+
+Effect #19
+echo
+gain-in gain-out delay decay [ delay decay ... ]
+
+Effect #20
+echos
+gain-in gain-out delay decay [ delay decay ... ]
+
+Effect #21
+equalizer
+frequency width[q|o|h|k] gain
+
+Effect #22
+fade
+[ type ] fade-in-length [ stop-position [ fade-out-length ] ]
+       Time is in hh:mm:ss.frac format.
+       Fade type one of q, h, t, l or p.
+
+Effect #23
+fir
+[coef-file|coefs]
+
+Effect #24
+firfit
+[knots-file]
+
+Effect #25
+flanger
+[delay depth regen width speed shape phase interp]
+                  .
+                 /|regen
+                / |
+            +--(  |------------+
+            |   \ |            |   .
+           _V_   \|  _______   |   |\ width   ___
+          |   |   ' |       |  |   | \       |   |
+      +-->| + |---->| DELAY |--+-->|  )----->|   |
+      |   |___|     |_______|      | /       |   |
+      |           delay : depth    |/        |   |
+  In  |                 : interp   '         |   | Out
+  --->+               __:__                  | + |--->
+      |              |     |speed            |   |
+      |              |  ~  |shape            |   |
+      |              |_____|phase            |   |
+      +------------------------------------->|   |
+                                             |___|
+       RANGE DEFAULT DESCRIPTION
+delay   0 30    0    base delay in milliseconds
+depth   0 10    2    added swept delay in milliseconds
+regen -95 +95   0    percentage regeneration (delayed signal feedback)
+width   0 100   71   percentage of delayed signal mixed with original
+speed  0.1 10  0.5   sweeps per second (Hz) 
+shape    --    sin   swept wave shape: sine|triangle
+phase   0 100   25   swept wave percentage phase-shift for multi-channel
+                     (e.g. stereo) flange; 0 = 100 = same phase on each channel
+interp   --    lin   delay-line interpolation: linear|quadratic
+
+Effect #26
+gain
+[-e|-b|-B|-r] [-n] [-l|-h] [gain-dB]
+-e	 Equalise channels: peak to that with max peak;
+-B	 Balance channels: rms to that with max rms; no clip protection
+-b	 Balance channels: rms to that with max rms; clip protection
+	   Note -Bn = -bn
+-r	 Reclaim headroom (as much as possible without clipping); see -h
+-n	 Norm file to 0dBfs(output precision); gain-dB, if present, usually <0
+-l	 Use simple limiter
+-h	 Apply attenuation for headroom for subsequent effects; gain-dB, if
+	   present, is subject to reclaim by a subsequent gain -r
+gain-dB	 Apply gain in dB
+
+Effect #27
+highpass
+[-1|-2] frequency [width[q|o|h|k](0.707q)]
+
+Effect #28
+hilbert
+[-n taps]
+
+Effect #29
+input
+
+
+Effect #30
+loudness
+[gain [ref]]
+
+Effect #31
+lowpass
+[-1|-2] frequency [width[q|o|h|k]](0.707q)
+
+Effect #32
+mcompand
+quoted_compand_args [crossover_frequency[k] quoted_compand_args [...]]
+
+quoted_compand_args are as for the compand effect:
+
+  attack1,decay1[,attack2,decay2...]
+                 in-dB1,out-dB1[,in-dB2,out-dB2...]
+                [ gain [ initial-volume [ delay ] ] ]
+
+Effect #33
+noiseprof
+[profile-file]
+
+Effect #34
+noisered
+[profile-file [amount]]
+
+Effect #35
+norm
+[level]
+
+Effect #36
+oops
+
+
+Effect #37
+output
+
+
+Effect #38
+overdrive
+[gain [colour]]
+
+Effect #39
+pad
+{length[@position]}
+
+Effect #40
+phaser
+gain-in gain-out delay decay speed [ -s | -t ]
+
+Effect #41
+pitch
+[-q] shift-in-cents [segment-ms [search-ms [overlap-ms]]]
+
+Effect #42
+rate
+[-q|-l|-m|-h|-v] [override-options] RATE[k]
+                    BAND-
+     QUALITY        WIDTH  REJ dB   TYPICAL USE
+ -q  quick          n/a  ~30 @ Fs/4 playback on ancient hardware
+ -l  low            80%     100     playback on old hardware
+ -m  medium         95%     100     audio playback
+ -h  high (default) 95%     125     16-bit mastering (use with dither)
+ -v  very high      95%     175     24-bit mastering
+              OVERRIDE OPTIONS (only with -m, -h, -v)
+ -M/-I/-L     Phase response = minimum/intermediate/linear(default)
+ -s           Steep filter (band-width = 99%)
+ -a           Allow aliasing above the pass-band
+ -b 74-99.7   Any band-width %
+ -p 0-100     Any phase response (0 = minimum, 25 = intermediate,
+              50 = linear, 100 = maximum)
+
+Effect #43
+remix
+[-m|-a] [-p] <0|in-chan[v|p|i volume]{,in-chan[v|p|i volume]}>
+
+Effect #44
+repeat
+[count (1)]
+
+Effect #45
+reverb
+[-w|--wet-only] [reverberance (50%) [HF-damping (50%) [room-scale (100%) [stereo-depth (100%) [pre-delay (0ms) [wet-gain (0dB)]]]]]]
+
+Effect #46
+reverse
+
+
+Effect #47
+riaa
+
+
+Effect #48
+silence
+[ -l ] above_periods [ duration threshold[d|%] ] [ below_periods duration threshold[d|%] ]
+
+Effect #49
+sinc
+[-a att|-b beta] [-p phase|-M|-I|-L] [-t tbw|-n taps] [freqHP][-freqLP [-t tbw|-n taps]]
+
+Effect #50
+speed
+factor[c]
+
+Effect #51
+splice
+[-h|-t|-q] {position[,excess[,leeway]]}
+  -h        Half sine fade (default); constant gain (for correlated audio)
+  -t        Triangular (linear) fade; constant gain (for correlated audio)
+  -q        Quarter sine fade; constant power (for correlated audio e.g. x-fade)
+  position  The length of part 1 (including the excess)
+  excess    At the end of part 1 & the start of part2 (default 0.005)
+  leeway    Before part2 (default 0.005; set to 0 for cross-fade)
+
+Effect #52
+stat
+[ -s N ] [ -rms ] [-freq] [ -v ] [ -d ]
+
+Effect #53
+stats
+[-b bits|-x bits|-s scale] [-w window-time]
+
+Effect #54
+stretch
+factor [window fade shift fading]
+       (expansion, frame in ms, lin/..., unit<1.0, unit<0.5)
+       (defaults: 1.0 20 lin ...)
+
+Effect #55
+swap
+
+
+Effect #56
+synth
+[-j KEY] [-n] [length [offset [phase [p1 [p2 [p3]]]]]]] {type [combine] [[%]freq[k][:|+|/|-[%]freq2[k]] [offset [phase [p1 [p2 [p3]]]]]]}
+
+Effect #57
+tempo
+[-q] [-m | -s | -l] factor [segment-ms [search-ms [overlap-ms]]]
+
+Effect #58
+treble
+gain [frequency(3000) [width[s|h|k|q|o]](0.5s)]
+
+Effect #59
+tremolo
+speed_Hz [depth_percent]
+
+Effect #60
+trim
+{position}
+
+Effect #61
+upsample
+[factor (2)]
+
+Effect #62
+vad
+[options]
+	-t trigger-level                (7)
+	-T trigger-time-constant        (0.25 s)
+	-s search-time                  (1 s)
+	-g allowed-gap                  (0.25 s)
+	-p pre-trigger-time             (0 s)
+Advanced options:
+	-b noise-est-boot-time          (0.35 s)
+	-N noise-est-time-constant-up   (0.1 s)
+	-n noise-est-time-constant-down (0.01 s)
+	-r noise-reduction-amount       (1.35)
+	-f measurement-frequency        (20 Hz)
+	-m measurement-duration         (0.1 s)
+	-M measurement-time-constant    (0.4 s)
+	-h high-pass-filter             (50 Hz)
+	-l low-pass-filter              (6000 Hz)
+	-H high-pass-lifter             (150 Hz)
+	-L low-pass-lifter              (2000 Hz)
+
+Effect #63
+vol
+GAIN [TYPE [LIMITERGAIN]]
+	(default TYPE=amplitude: 1 is constant, < 0 change phase;
+	TYPE=power 1 is constant; TYPE=dB: 0 is constant, +6 doubles ampl.)
+	The peak limiter has a gain much less than 1 (e.g. 0.05 or 0.02) and
+	is only used on peaks (to prevent clipping); default is no limiter.
+
