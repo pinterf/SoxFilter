@@ -255,7 +255,7 @@ SoxFilter::SoxFilter(PClip _child, const AVSValue args_avs, IScriptEnvironment* 
   signalinfo_in.rate = vi.audio_samples_per_second;
   signalinfo_in.channels = vi.AudioChannels();
   signalinfo_in.precision = 32;
-  signalinfo_in.length = 0; // samples*channels in file; 0 if unknown
+  signalinfo_in.length = vi.num_audio_samples * vi.AudioChannels(); // samples*channels in file; 0 if unknown
   signalinfo_in.mult = nullptr; // effect headroom multiplier, can be NULL
 
   sox_encodinginfo_t encodinginfo_in;
@@ -337,11 +337,13 @@ SoxFilter::SoxFilter(PClip _child, const AVSValue args_avs, IScriptEnvironment* 
     const sox_effect_handler_t* effect_handler = sox_find_effect(effect_name);
     if (effect_handler == nullptr)
       error_text += "Could not find effect.";
+    /* v2.1: Let's allow them, we can change the VideoInfo audio properties at the end.
     // some checking on possible incompatibility
     else if (effect_handler->flags & SOX_EFF_CHAN)
       error_text += "Cannot run effects that change the number of channels.";
     else if (effect_handler->flags & SOX_EFF_RATE)
       error_text += "Cannot run effects that change the samplerate.";
+    */
     else {
       // Create the effect, and initialise it with the parameters
       e = sox_create_effect(effect_handler);
@@ -385,6 +387,12 @@ SoxFilter::SoxFilter(PClip _child, const AVSValue args_avs, IScriptEnvironment* 
       error_text += "Cannot add effect to the chain.";
       env->ThrowError(error_text.c_str());
     }
+
+  const int input_AudioChannels = vi.AudioChannels();
+  // write back the resulting rate and channel count to VideoInfo format
+  vi.audio_samples_per_second = (int)(signalinfo_in.rate + 0.5); // effects can change sampling rate
+  vi.nchannels = signalinfo_in.channels; // effects can change number of channels, e.g. remix stereo to mono
+  vi.num_audio_samples = signalinfo_in.length / vi.AudioChannels();
   }
 
   // ------------------------ output ------------------------------
