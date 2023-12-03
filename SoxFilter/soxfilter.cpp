@@ -51,6 +51,7 @@
 #include <algorithm>
 #include <string>
 #include <sstream>
+#include <atomic>
 
 #define OUTPUT_MESSAGE_HANDLER_BUFFERS
 
