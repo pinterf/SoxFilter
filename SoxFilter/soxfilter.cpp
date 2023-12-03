@@ -385,6 +385,16 @@ SoxFilter::SoxFilter(PClip _child, const AVSValue args_avs, IScriptEnvironment* 
     }
 #endif
 
+    // sox_add_effect:
+    // signalinfo_in specifies the input signal info for this effect. 
+    // signalinfo_out is a suggestion as to what the output signal should be 
+    // but depending on the effects given options and on in the effect can choose 
+    // to do differently; we pass the same signalinfo_in for that.
+    // Whatever output rate and channels the effect does produce are written back to 
+    // signalinfo_in. 
+    // It is meant that in be stored and passed to each new call to sox_add_effect so 
+    // that changes will be propagated to each new effect.
+
     // Add the effect to the end of the effects processing chain
     sox_errno = sox_add_effect(chain, e, &signalinfo_in, &signalinfo_in);
     free(e);
