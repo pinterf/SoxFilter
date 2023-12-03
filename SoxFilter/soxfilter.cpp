@@ -393,6 +393,26 @@ SoxFilter::SoxFilter(PClip _child, const AVSValue args_avs, IScriptEnvironment* 
       error_text += "Cannot add effect to the chain.";
       env->ThrowError(error_text.c_str());
     }
+    // sanity test: may fail.
+    if ((signalinfo_in.length % signalinfo_in.channels) != 0) {
+      // Opps, unfortunately this can occur: odd number of samples for two channels.
+      // A bug? Maybe.
+      // sox_add_effects recalculates the length without considering the channel count.
+      //   if (effp->handler.flags & SOX_EFF_RATE)
+      //     effp->out_signal.length = effp->out_signal.length / in->rate * effp->out_signal.rate + .5;
+      // I'd calculate the number of samples which are available for all channels.
+      // Example (old rate = 48000; new rate = 48100)
+      // in: sample_count = 2884481, channels=2 => length = 5768962
+      // out (ideal): 2 * round(2884481 / 48000.0 * 48100.0) = 2 * round(2890490,335) = 2 * 2890490 = 5780980
+      // out (sox)  : round(5768962 / 48000.0 * 48100.0) = round (5780980,670) = 5780981 (odd for two channels?!)
+      signalinfo_in.length -= (signalinfo_in.length % signalinfo_in.channels); // make it multiple of channels.
+      /*
+      So we don't throw fatal error.
+      error_text += "The number of samples the effect returned is not multiple of number of channels.";
+      env->ThrowError(error_text.c_str());
+      */
+    }
+    }
 
   const int input_AudioChannels = vi.AudioChannels();
   // write back the resulting rate and channel count to VideoInfo format
