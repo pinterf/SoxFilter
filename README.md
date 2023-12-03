@@ -1,5 +1,5 @@
 # SoxFilter
-SoxFilter 2.0 for AviSynth by pinterf (20231201)
+SoxFilter 2.1 for AviSynth by pinterf (20231201)
 Based on Sox audio library 14.4.2
 
 As of 2023/12/01 the actual soxlib version used in the plugin (as seen in sox.h):
@@ -16,6 +16,7 @@ The Avisynth plugin provides a filter to use an effect or effect chain on AviSyn
 AviSynth acts both as writer and reader of audio data, no external audio files are involved.
 
 SoxFilter will convert the audio to 32 bit integer format, this is how libsox works internally.
+It calls "ConvertAudio" which is part of AviSynth+.
 
 SoxFilter's actual effects and their parameters must be provided the very same way 
 as one would put for the sox application, but one must separate the effects into a string list.
@@ -30,10 +31,8 @@ SoxFilter has one or more string parameter, each would describe a single effect 
 Pseudo effects, which govern the behaviour of files (like `newfile` or `restart`) are not supported.
 
 Sox effects heavily require linear audio stream flow. Seeking is probably not supported.
-In order to work properly, SoxFilter would need a working AviSynth audio cache.
-Use this plugin with at least AviSynth+ 3.7.3 (or Classic Avisynth 2.6).
-Sox effectt
-
+In order to work properly, SoxFilter needs a working AviSynth audio cache, so use this plugin 
+with AviSynth+ 3.7.3 as a minimum.
 
 There existed a previous SoxFilter 1.1 for Avisynth, but since its creation libsox 
 internals changed 100%. This project was created from scratch. Also, some effects were removed, 
@@ -45,9 +44,19 @@ See also <http://avisynth.nl/index.php/SoxFilter>
 
 ## Functions in plugin
 
-* Filter: apply one or more effect on audio data of clip
+* Filter: apply one or more effects on audio data of clip
 
-  `SoxFilter(clip, effect_and_params [, effect_and_params2, effect_and_params3, ...]`
+  `SoxFilter(clip, string effect_and_params [, string effect_and_params2, string effect_and_params3, ...])`
+
+  Since v2.1 the effects which can alter the sampling rate and/or number of channels are not disabled any more.
+
+  Note that in AviSynth the sampling rate is an integer number, but in soxlib core it is a floating
+  point (64 bit double) number. Resulting sample rate would be rounded for Avisynth.
+
+```
+    ColorBars() # Stereo 48000Hz
+    SoxFilter("rate 48100", "remix -") # resample to 48100Hz and convert to mono
+```
 
 * showing the list of possible effect names
 
@@ -63,7 +72,7 @@ See also <http://avisynth.nl/index.php/SoxFilter>
 
 * function returning the usage of a given effect
 
-  `SoxFilter_GetEffectUsage(effect_name)`
+  `SoxFilter_GetEffectUsage(string effect_name)`
 
   Each Sox effect has a short "usage" string. Empty string is returned if not found or when
   there is no usage info.
@@ -137,7 +146,7 @@ with such libraries, it must be distributed under the GPL.
 4. Edit `wav.c`, because it is using a gcc extension syntax for empty initialization which
    would result in compile error under MSVC.
 
-  1. Find the lines
+   1. Find the lines
 
 ```
     static const struct wave_format wave_formats[] = {
@@ -148,7 +157,7 @@ with such libraries, it must be distributed under the GPL.
     };
 ```
 
-  2. Replace empty `{ }` with `{ NULL, NULL }`.
+   2. Replace empty `{ }` with `{ NULL, NULL }`.
 
 ```
     static const struct wave_format wave_formats[] = {
@@ -159,12 +168,50 @@ with such libraries, it must be distributed under the GPL.
     };
 ```
 
-5. Open Visual Studio solution
+5. Edit `util.c`, because `S_IFDIR` macro is not defined with v141_xp toolset (Windows SDK 7).
+   This affects XP targets only, Windows 10 SDK contains it in `sys\stat.h`
 
-6. Build the two projects from Visual Studio's GUI: libsox, then SoxFilter
+   1. Find the lines
+
+```
+    #ifdef _MSC_VER
+    #define __STDC__ 1
+    #define O_BINARY _O_BINARY
+    #define O_CREAT _O_CREAT
+    #define O_RDWR _O_RDWR
+    #define O_TRUNC _O_TRUNC
+    #define S_IFMT _S_IFMT
+    #define S_IFREG _S_IFREG
+    #define S_IREAD _S_IREAD
+```
+
+   2. Insert the line `#define S_IFDIR _S_IFDIR` after `#define S_IFMT _S_IFMT`
+
+```
+    #define S_IFMT _S_IFMT
+    #define S_IFDIR _S_IFDIR
+    #define S_IFREG _S_IFREG
+```
+
+6. Open Visual Studio solution
+
+7. Build the two projects from Visual Studio's GUI: libsox, then SoxFilter
+
+
+## Change log
+
+- 20231203 v2.1 pinterf
+  - Allow effects which can alter sampling rate
+  - Allow effects which can change the number of channels
+  - Add XP build (v141_xp toolset)
+
+- 20231202 v2.0 pinterf
+  - Full rewrite, using 14.4.2 libsox library version
+
 
 ## Useful links
 
+* Doom9 forum of SoxFilter 2: <https://forum.doom9.org/showthread.php?p=1994597>
 * SoxFilter repo: <https://github.com/pinterf/SoxFilter.git>
 * Original SoX homepage: <https://sourceforge.net/projects/sox/>
 * libsox git cloning source: <https://git.code.sf.net/p/sox/code>
