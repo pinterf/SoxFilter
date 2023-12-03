@@ -172,6 +172,7 @@ public:
   avs_out_info_t out_info;
 
 private:
+  bool has_at_least_v10;
   sox_effects_chain_t* chain;
 };
 
@@ -220,6 +221,11 @@ SoxFilter::SoxFilter(PClip _child, const AVSValue args_avs, IScriptEnvironment* 
   GenericVideoFilter(_child),
   chain(nullptr)
 {
+
+  has_at_least_v10 = true; // for audio channel speaker masks
+  try { env->CheckVersion(10); }
+  catch (const AvisynthError&) { has_at_least_v10 = false; }
+
   int sox_errno;
 
   // All libSoX applications must start by initialising the SoX library
@@ -393,6 +399,13 @@ SoxFilter::SoxFilter(PClip _child, const AVSValue args_avs, IScriptEnvironment* 
   vi.audio_samples_per_second = (int)(signalinfo_in.rate + 0.5); // effects can change sampling rate
   vi.nchannels = signalinfo_in.channels; // effects can change number of channels, e.g. remix stereo to mono
   vi.num_audio_samples = signalinfo_in.length / vi.AudioChannels();
+
+  // Clear channel speaker mask if the number of channels has been changed.
+  // Better than guessing
+  if (input_AudioChannels != vi.AudioChannels()) {
+    if (has_at_least_v10) {
+      vi.SetChannelMask(false /* mask is unknown */, 0 /* n/a */);
+    }
   }
 
   // ------------------------ output ------------------------------
