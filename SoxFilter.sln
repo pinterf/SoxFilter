@@ -11,6 +11,8 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release_XP|x64 = Release_XP|x64
+		Release_XP|x86 = Release_XP|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -19,6 +21,10 @@ Global
 		{ADD2A0AE-952C-4A00-93B7-6E53FA023655}.Debug|x64.Build.0 = Debug|x64
 		{ADD2A0AE-952C-4A00-93B7-6E53FA023655}.Debug|x86.ActiveCfg = Debug|Win32
 		{ADD2A0AE-952C-4A00-93B7-6E53FA023655}.Debug|x86.Build.0 = Debug|Win32
+		{ADD2A0AE-952C-4A00-93B7-6E53FA023655}.Release_XP|x64.ActiveCfg = Release_XP|x64
+		{ADD2A0AE-952C-4A00-93B7-6E53FA023655}.Release_XP|x64.Build.0 = Release_XP|x64
+		{ADD2A0AE-952C-4A00-93B7-6E53FA023655}.Release_XP|x86.ActiveCfg = Release_XP|Win32
+		{ADD2A0AE-952C-4A00-93B7-6E53FA023655}.Release_XP|x86.Build.0 = Release_XP|Win32
 		{ADD2A0AE-952C-4A00-93B7-6E53FA023655}.Release|x64.ActiveCfg = Release|x64
 		{ADD2A0AE-952C-4A00-93B7-6E53FA023655}.Release|x64.Build.0 = Release|x64
 		{ADD2A0AE-952C-4A00-93B7-6E53FA023655}.Release|x86.ActiveCfg = Release|Win32
@@ -27,6 +33,10 @@ Global
 		{76429D96-872D-431B-AF87-F0E329E0566B}.Debug|x64.Build.0 = Debug|x64
 		{76429D96-872D-431B-AF87-F0E329E0566B}.Debug|x86.ActiveCfg = Debug|Win32
 		{76429D96-872D-431B-AF87-F0E329E0566B}.Debug|x86.Build.0 = Debug|Win32
+		{76429D96-872D-431B-AF87-F0E329E0566B}.Release_XP|x64.ActiveCfg = Release_XP|x64
+		{76429D96-872D-431B-AF87-F0E329E0566B}.Release_XP|x64.Build.0 = Release_XP|x64
+		{76429D96-872D-431B-AF87-F0E329E0566B}.Release_XP|x86.ActiveCfg = Release_XP|Win32
+		{76429D96-872D-431B-AF87-F0E329E0566B}.Release_XP|x86.Build.0 = Release_XP|Win32
 		{76429D96-872D-431B-AF87-F0E329E0566B}.Release|x64.ActiveCfg = Release|x64
 		{76429D96-872D-431B-AF87-F0E329E0566B}.Release|x64.Build.0 = Release|x64
 		{76429D96-872D-431B-AF87-F0E329E0566B}.Release|x86.ActiveCfg = Release|Win32
