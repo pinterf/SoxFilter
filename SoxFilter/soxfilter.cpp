@@ -808,11 +808,11 @@ void __stdcall SoxFilter::GetAudio(void* buf, int64_t start, int64_t count, IScr
     
     int sox_errno = sox_flow_effects(chain, NULL, NULL);
 
-    _RPT4(0, "SoxFilter::GetAudio: AFTER flow debug1/2: output_sample_counter_mul_chn=%d total_needed_sample_count_mul_chn=%d next_start=%d\n",
+    _RPT3(0, "SoxFilter::GetAudio: AFTER flow debug1/2: output_sample_counter_mul_chn=%d total_needed_sample_count_mul_chn=%d next_start=%d\n",
       (int)out_info.output_sample_counter,
       (int)out_info.sample_count_getaudio,
       (int)out_info.remaining_precalculated_samples % vi.AudioChannels());
-    _RPT3(0, "SoxFilter::GetAudio: AFTER flow debug2/2: samplecount=%d samplecount_mul_chn=%d mod=%d\n",
+    _RPT4(0, "SoxFilter::GetAudio: AFTER flow debug2/2: samplecount=%d samplecount_mul_chn=%d mod=%d\n",
       (int)out_info.remaining_precalculated_samples / vi.AudioChannels(),
       (int)out_info.remaining_precalculated_samples,
       (int)out_info.remaining_precalculated_samples % vi.AudioChannels(),
