@@ -38,19 +38,10 @@
 
 
 // needs /Zc:__cplusplus on MSVC:
-#ifdef AVS_WINDOWS
-#include "avisynth.h"
-#include "avs/win.h"
-#include "avs/filesystem.h"
-#include "avs/minmax.h"
-#include "../libsox/sox.h"
-#else
 #include <avisynth.h>
-#include <avs/posix.h>
 #include <avs/filesystem.h>
 #include <avs/minmax.h>
 #include <sox.h>
-#endif
 #include <vector>
 #include <algorithm>
 #include <string>
