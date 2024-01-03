@@ -164,12 +164,21 @@ public:
     return 0;
   }
 
+  void add_effect_output(sox_signalinfo_t& signalinfo_in, sox_signalinfo_t& signalinfo_out, IScriptEnvironment* env);
+  void add_effect_input(sox_signalinfo_t& signalinfo_in, sox_signalinfo_t& signalinfo_out, IScriptEnvironment* env);
+  void init_signalinfos(sox_signalinfo_t& signalinfo_in, sox_signalinfo_t& signalinfo_out, sox_encodinginfo_t& encodinginfo_in, sox_encodinginfo_t& encodinginfo_out);
+  void rebuild_effect_chain(bool first_time, IScriptEnvironment* env);
+  void RestartEffects(IScriptEnvironment* env);
+
   avs_in_info_t avs_in_info;
   avs_out_info_t out_info;
 
 private:
   bool has_at_least_v10;
   sox_effects_chain_t* chain;
+  std::vector<std::string> effect_s_array;
+  bool restarted;
+  VideoInfo vi_orig;
 };
 
 #ifdef OUTPUT_MESSAGE_HANDLER_BUFFERS
@@ -213,6 +222,243 @@ static void output_message(unsigned level, const char *filename, const char *fmt
 */
 #endif
 
+
+// ------------------------ output ------------------------------
+// Final 'effect' in the chain: output, copy back to Avisynth GetAudio buffer
+void SoxFilter::add_effect_output(sox_signalinfo_t &signalinfo_in, sox_signalinfo_t &signalinfo_out, IScriptEnvironment* env) {
+  sox_effect_t* e;
+  int sox_errno;
+
+  e = sox_create_effect(output_handler());
+  if (!e) {
+    sox_delete_effects_chain(chain);
+    env->ThrowError("SoxFilter: error creating output handler\n");
+  }
+  avs_privdata_t priv_for_output;
+  priv_for_output.caller = this; // to access the Avisynth SoxFilter class variables 
+  *reinterpret_cast<avs_privdata_t*>(e->priv) = priv_for_output; // whole struct copy
+
+  sox_errno = sox_add_effect(chain, e, &signalinfo_in, &signalinfo_in);
+  free(e);
+  if (sox_errno != SOX_SUCCESS) {
+    sox_delete_effects_chain(chain);
+    env->ThrowError("Error in creating effect 'output' as output_handler: %d %s\n", sox_errno, sox_strerror(sox_errno));
+  }
+}
+
+// -------------- input ------------------------------------------
+// The first effect in the effect chain: source.
+// This input handler will feed the sox filter flow
+// from our internal buffer.
+// This buffer is filled by calling child's GetAudio
+// on demand, asynchronously.
+void SoxFilter::add_effect_input(sox_signalinfo_t& signalinfo_in, sox_signalinfo_t& signalinfo_out, IScriptEnvironment* env) {
+  sox_effect_t* e;
+  int sox_errno;
+
+  e = sox_create_effect(input_handler());
+  if (!e) {
+    sox_delete_effects_chain(chain);
+    env->ThrowError("SoxFilter: error creating input handler\n");
+  }
+  avs_privdata_t priv_for_input;
+  priv_for_input.caller = this; // to access the Avisynth SoxFilter class variables 
+  *reinterpret_cast<avs_privdata_t*>(e->priv) = priv_for_input; // whole struct copy
+  // This input drain becomes the first effect in the chain
+  sox_errno = sox_add_effect(chain, e, &signalinfo_in, &signalinfo_in);
+  free(e);
+  if (sox_errno != SOX_SUCCESS) {
+    sox_delete_effects_chain(chain);
+    env->ThrowError("Error in creating effect 'input' as input_handler: %d %s\n", sox_errno, sox_strerror(sox_errno));
+  }
+}
+
+void SoxFilter::init_signalinfos(sox_signalinfo_t& signalinfo_in, sox_signalinfo_t& signalinfo_out, sox_encodinginfo_t& encodinginfo_in, sox_encodinginfo_t& encodinginfo_out)
+{
+  // ------------------------------------------------------------
+  signalinfo_in.rate = vi_orig.audio_samples_per_second;
+  signalinfo_in.channels = vi_orig.AudioChannels();
+  signalinfo_in.precision = 32;
+  signalinfo_in.length = vi_orig.num_audio_samples * vi_orig.AudioChannels(); // samples*channels in file; 0 if unknown
+  signalinfo_in.mult = nullptr; // effect headroom multiplier, can be NULL
+
+  encodinginfo_in.encoding = sox_encoding_t::SOX_ENCODING_SIGN2;
+  encodinginfo_in.bits_per_sample = 32;
+  encodinginfo_in.compression = 0.0;
+  encodinginfo_in.reverse_bytes = sox_option_t::sox_option_default;
+  encodinginfo_in.reverse_bits = sox_option_t::sox_option_default;
+  encodinginfo_in.reverse_nibbles = sox_option_t::sox_option_default;
+  encodinginfo_in.opposite_endian = sox_false;
+
+  // output signal characteristics are the same as the input characteristics 
+  encodinginfo_out = encodinginfo_in;
+  signalinfo_out = signalinfo_in;
+}
+
+void SoxFilter::rebuild_effect_chain(bool first_time, IScriptEnvironment *env)
+{
+  int sox_errno;
+
+  sox_signalinfo_t signalinfo_in;
+  sox_signalinfo_t signalinfo_out;
+  sox_encodinginfo_t encodinginfo_in;
+  sox_encodinginfo_t encodinginfo_out;
+
+  init_signalinfos(signalinfo_in, signalinfo_out, encodinginfo_in, encodinginfo_out); // all refs. Work by vi_orig
+
+  // Create an effects chain; some effects need to know about the input
+  // or output file encoding so we provide that information here
+  // In Avisynth this is fixed and the setting is the same for both in and out
+  chain = sox_create_effects_chain(&encodinginfo_in, &encodinginfo_out);
+  if (!chain)
+    env->ThrowError("SoxFilter: error creating effect chain\n");
+
+  // -------------- input ------------------------------------------
+  // The first effect in the effect chain: source.
+  add_effect_input(signalinfo_in, signalinfo_out, env);
+
+  // --------------- effects ----------------------------------------
+  // Add effects one by one from SoxFilter's parameter(s)
+  for (auto arg_str : effect_s_array)
+  {
+    std::vector<std::string> arg_list_array;
+
+    std::istringstream find_in_this(arg_str);
+    std::string one_string;
+    while (std::getline(find_in_this, one_string, ' ')) {
+      arg_list_array.push_back(one_string);
+    }
+
+    // First argument is the effect name
+    const char* effect_name = arg_list_array[0].c_str();
+
+    // create char * array from arglist[] elements
+    // The rest (size-1) strings are effect parameters
+    int num_params = (int)arg_list_array.size() - 1;
+    std::vector<char*> arglist_ptr(num_params);
+    for (int i = 0; i < num_params; i++)
+      arglist_ptr[i] = (char*)arg_list_array[i + 1].c_str();
+
+    std::string error_text = "SoxFilter: (" + std::string(effect_name) + ") ";
+    bool ok = false;
+
+    sox_effect_t* e;
+
+    // Find a named effect in the effects library 
+    const sox_effect_handler_t* effect_handler = sox_find_effect(effect_name);
+    if (effect_handler == nullptr)
+      error_text += "Could not find effect.";
+    /* v2.1: Let's allow them, we can change the VideoInfo audio properties at the end.
+    // some checking on possible incompatibility
+    else if (effect_handler->flags & SOX_EFF_CHAN)
+      error_text += "Cannot run effects that change the number of channels.";
+    else if (effect_handler->flags & SOX_EFF_RATE)
+      error_text += "Cannot run effects that change the samplerate.";
+    */
+    else {
+      // Create the effect, and initialise it with the parameters
+      e = sox_create_effect(effect_handler);
+      if (!e)
+        error_text += "Cannot create effect: sox_create_effect failed.\n";
+      else
+        ok = true;
+    }
+
+    if (!ok) {
+      sox_delete_effects_chain(chain);
+      env->ThrowError(error_text.c_str());
+    }
+
+
+    if (first_time)
+    { // mutex scope
+#ifdef OUTPUT_MESSAGE_HANDLER_BUFFERS
+      std::lock_guard<std::mutex> lock(errormessagemutex);
+      // Hijack it only for catching errors in 'options' processing
+      auto tmp_output_message_handler = sox_globals.output_message_handler;
+      sox_globals.output_message_handler = my_output_message;
+#endif
+      sox_errno = sox_effect_options(e, num_params, arglist_ptr.data());
+      if (sox_errno != SOX_SUCCESS) {
+        // "my_output_message" will add a more detailed error beforehand.
+        free(e);
+        sox_delete_effects_chain(chain);
+        error_text += "Error in options.\n" + errormessage;
+        env->ThrowError(error_text.c_str());
+      }
+#ifdef OUTPUT_MESSAGE_HANDLER_BUFFERS
+      sox_globals.output_message_handler = tmp_output_message_handler;
+#endif
+    }
+    else
+    {
+      // when called after a restart this shouldn't error out, ignore
+      sox_errno = sox_effect_options(e, num_params, arglist_ptr.data());
+    }
+
+    // sox_add_effect:
+    // signalinfo_in specifies the input signal info for this effect. 
+    // signalinfo_out is a suggestion as to what the output signal should be 
+    // but depending on the effects given options and on in the effect can choose 
+    // to do differently; we pass the same signalinfo_in for that.
+    // Whatever output rate and channels the effect does produce are written back to 
+    // signalinfo_in.
+    // It is meant that in be stored and passed to each new call to sox_add_effect so 
+    // that changes will be propagated to each new effect.
+
+    // Add the effect to the end of the effects processing chain
+    sox_errno = sox_add_effect(chain, e, &signalinfo_in, &signalinfo_in);
+    free(e);
+    if (sox_errno != SOX_SUCCESS) {
+      sox_delete_effects_chain(chain);
+      error_text += "Cannot add effect to the chain.";
+      env->ThrowError(error_text.c_str());
+    }
+    // sanity test: may fail.
+    if ((signalinfo_in.length % signalinfo_in.channels) != 0) {
+      // Opps, unfortunately this can occur: odd number of samples for two channels.
+      // A bug? Maybe.
+      // This happens:
+      // sox_add_effects recalculates the length without considering the channel count.
+      //   if (effp->handler.flags & SOX_EFF_RATE)
+      //     effp->out_signal.length = effp->out_signal.length / in->rate * effp->out_signal.rate + .5;
+      // This should happen:
+      // Calculate the number of samples which are available for all channels.
+      // Example (old rate = 48000; new rate = 48100)
+      // in: sample_count = 2884481, channels=2 => length = 5768962
+      // out (ideal): 2 * round(2884481 / 48000.0 * 48100.0) = 2 * round(2890490,335) = 2 * 2890490 = 5780980
+      // out (sox)  : round(5768962 / 48000.0 * 48100.0) = round (5780980,670) = 5780981 (odd sample count for two channels?!)
+      signalinfo_in.length -= (signalinfo_in.length % signalinfo_in.channels); // make it multiple of channels.
+      /*
+      So we don't throw fatal error, just adjust the total length instead.
+      error_text += "The number of samples the effect returned is not multiple of number of channels.";
+      env->ThrowError(error_text.c_str());
+      */
+    }
+  }
+
+  if (first_time) {
+    const int input_AudioChannels = vi.AudioChannels();
+    // write back the resulting rate and channel count to VideoInfo format
+    vi.audio_samples_per_second = (int)(signalinfo_in.rate + 0.5); // effects can change sampling rate
+    vi.nchannels = signalinfo_in.channels; // effects can change number of channels, e.g. remix stereo to mono
+    vi.num_audio_samples = signalinfo_in.length / vi.AudioChannels();
+
+    // Clear channel speaker mask if the number of channels has been changed.
+    // Better than guessing
+    if (input_AudioChannels != vi.AudioChannels()) {
+      if (has_at_least_v10) {
+        vi.SetChannelMask(false /* mask is unknown */, 0 /* n/a */);
+      }
+    }
+  }
+
+  // ------------------------ output ------------------------------
+  // Final 'effect' in the chain: output, copy back to Avisynth GetAudio buffer
+  add_effect_output(signalinfo_in, signalinfo_out, env);
+}
+
+
 SoxFilter::SoxFilter(PClip _child, const AVSValue args_avs, IScriptEnvironment* env) :
   GenericVideoFilter(_child),
   chain(nullptr)
@@ -244,6 +490,8 @@ SoxFilter::SoxFilter(PClip _child, const AVSValue args_avs, IScriptEnvironment* 
   out_info.precalc_ptr = 0;
   out_info.precalc_buf.resize(avs_in_info.buffersize_for_samples); // 1 sec
 
+  restarted = false;
+
   // process effects, one effect in each AviSynth string parameter
   AVSValue args_effectlist = args_avs[1];
 
@@ -252,204 +500,20 @@ SoxFilter::SoxFilter(PClip _child, const AVSValue args_avs, IScriptEnvironment* 
   if (!num_args)
     env->ThrowError("SoxFilter: No effects specified");
 
-  // ------------------------------------------------------------
-  sox_signalinfo_t signalinfo_in;
-  signalinfo_in.rate = vi.audio_samples_per_second;
-  signalinfo_in.channels = vi.AudioChannels();
-  signalinfo_in.precision = 32;
-  signalinfo_in.length = vi.num_audio_samples * vi.AudioChannels(); // samples*channels in file; 0 if unknown
-  signalinfo_in.mult = nullptr; // effect headroom multiplier, can be NULL
-
-  sox_encodinginfo_t encodinginfo_in;
-  encodinginfo_in.encoding = sox_encoding_t::SOX_ENCODING_SIGN2;
-  encodinginfo_in.bits_per_sample = 32;
-  encodinginfo_in.compression = 0.0;
-  encodinginfo_in.reverse_bytes = sox_option_t::sox_option_default;
-  encodinginfo_in.reverse_bits = sox_option_t::sox_option_default;
-  encodinginfo_in.reverse_nibbles = sox_option_t::sox_option_default;
-  encodinginfo_in.opposite_endian = sox_false;
-
-  // output signal characteristics are the same as the input characteristics 
-  sox_encodinginfo_t encodinginfo_out = encodinginfo_in;
-  sox_signalinfo_t signalinfo_out = signalinfo_in;
-
-  // Create an effects chain; some effects need to know about the input
-  // or output file encoding so we provide that information here
-  // In Avisynth this is fixed and the setting is the same for both in and out
-  chain = sox_create_effects_chain(&encodinginfo_in, &encodinginfo_out);
-  if (!chain)
-    env->ThrowError("SoxFilter: error creating effect chain\n");
-
-  sox_effect_t* e;
-
-  // -------------- input ------------------------------------------
-  // The first effect in the effect chain: source.
-  // This input handler will feed the sox filter flow
-  // from our internal buffer.
-  // This buffer is filled by calling child's GetAudio
-  // on demand, asynchronously.
-  e = sox_create_effect(input_handler());
-  if (!e) {
-    sox_delete_effects_chain(chain);
-    env->ThrowError("SoxFilter: error creating input handler\n");
-  }
-  avs_privdata_t priv_for_input;
-  priv_for_input.caller = this; // to access the Avisynth SoxFilter class variables 
-  *reinterpret_cast<avs_privdata_t*>(e->priv) = priv_for_input; // whole struct copy
-  // This input drain becomes the first effect in the chain
-  sox_errno = sox_add_effect(chain, e, &signalinfo_in, &signalinfo_in);
-  free(e);
-  if (sox_errno != SOX_SUCCESS) {
-    sox_delete_effects_chain(chain);
-    env->ThrowError("Error in creating effect 'input' as input_handler: %d %s\n", sox_errno, sox_strerror(sox_errno));
-  }
-
-  // --------------- effects ----------------------------------------
-  // Add effects one by one from SoxFilter's parameter(s)
-  for (int curr_eff = 0; curr_eff < num_args; curr_eff++)
-  {
-    std::string arg_str = args_effectlist[curr_eff].AsString();
-
+  // move all avisynth parameters into string array
+  effect_s_array.resize(num_args);
+  for (auto i = 0; i < num_args; i++) {
+    std::string arg_str = args_effectlist[i].AsString();
     // magic: remove multiple spaces and convert them into a single one
     arg_str.erase(std::unique(arg_str.begin(), arg_str.end(),
       [](char a, char b) { return a == ' ' && b == ' '; }), arg_str.end());
-
-    std::vector<std::string> arg_list_array;
-
-    std::istringstream find_in_this(arg_str);
-    std::string one_string;
-    while (std::getline(find_in_this, one_string, ' ')) {
-      arg_list_array.push_back(one_string);
-    }
-
-    // First argument is the effect name
-    const char* effect_name = arg_list_array[0].c_str();
-
-    // create char * array from arglist[] elements
-    // The rest (size-1) strings are effect parameters
-    int num_params = (int)arg_list_array.size() - 1;
-    std::vector<char*> arglist_ptr(num_params);
-    for (int i = 0; i < num_params; i++)
-      arglist_ptr[i] = (char*)arg_list_array[i + 1].c_str();
-
-    std::string error_text = "SoxFilter: (" + std::string(effect_name) + ") ";
-    bool ok = false;
-
-    // Find a named effect in the effects library 
-    const sox_effect_handler_t* effect_handler = sox_find_effect(effect_name);
-    if (effect_handler == nullptr)
-      error_text += "Could not find effect.";
-    /* v2.1: Let's allow them, we can change the VideoInfo audio properties at the end.
-    // some checking on possible incompatibility
-    else if (effect_handler->flags & SOX_EFF_CHAN)
-      error_text += "Cannot run effects that change the number of channels.";
-    else if (effect_handler->flags & SOX_EFF_RATE)
-      error_text += "Cannot run effects that change the samplerate.";
-    */
-    else {
-      // Create the effect, and initialise it with the parameters
-      e = sox_create_effect(effect_handler);
-      if (!e)
-        error_text += "Cannot create effect: sox_create_effect failed.\n";
-      else
-        ok = true;
-    }
-
-    if (!ok) {
-      sox_delete_effects_chain(chain);
-      env->ThrowError(error_text.c_str());
-    }
-
-
-    { // mutex scope
-#ifdef OUTPUT_MESSAGE_HANDLER_BUFFERS
-      std::lock_guard<std::mutex> lock(errormessagemutex);
-      // Hijack it only for catching errors in 'options' processing
-      auto tmp_output_message_handler = sox_globals.output_message_handler;
-      sox_globals.output_message_handler = my_output_message;
-#endif
-      sox_errno = sox_effect_options(e, num_params, arglist_ptr.data());
-      if (sox_errno != SOX_SUCCESS) {
-        // "my_output_message" will add a more detailed error beforehand.
-        free(e);
-        sox_delete_effects_chain(chain);
-        error_text += "Error in options.\n" + errormessage;
-        env->ThrowError(error_text.c_str());
-      }
-#ifdef OUTPUT_MESSAGE_HANDLER_BUFFERS
-      sox_globals.output_message_handler = tmp_output_message_handler;
-    }
-#endif
-
-    // sox_add_effect:
-    // signalinfo_in specifies the input signal info for this effect. 
-    // signalinfo_out is a suggestion as to what the output signal should be 
-    // but depending on the effects given options and on in the effect can choose 
-    // to do differently; we pass the same signalinfo_in for that.
-    // Whatever output rate and channels the effect does produce are written back to 
-    // signalinfo_in. 
-    // It is meant that in be stored and passed to each new call to sox_add_effect so 
-    // that changes will be propagated to each new effect.
-
-    // Add the effect to the end of the effects processing chain
-    sox_errno = sox_add_effect(chain, e, &signalinfo_in, &signalinfo_in);
-    free(e);
-    if (sox_errno != SOX_SUCCESS) {
-      sox_delete_effects_chain(chain);
-      error_text += "Cannot add effect to the chain.";
-      env->ThrowError(error_text.c_str());
-    }
-    // sanity test: may fail.
-    if ((signalinfo_in.length % signalinfo_in.channels) != 0) {
-      // Opps, unfortunately this can occur: odd number of samples for two channels.
-      // A bug? Maybe.
-      // sox_add_effects recalculates the length without considering the channel count.
-      //   if (effp->handler.flags & SOX_EFF_RATE)
-      //     effp->out_signal.length = effp->out_signal.length / in->rate * effp->out_signal.rate + .5;
-      // I'd calculate the number of samples which are available for all channels.
-      // Example (old rate = 48000; new rate = 48100)
-      // in: sample_count = 2884481, channels=2 => length = 5768962
-      // out (ideal): 2 * round(2884481 / 48000.0 * 48100.0) = 2 * round(2890490,335) = 2 * 2890490 = 5780980
-      // out (sox)  : round(5768962 / 48000.0 * 48100.0) = round (5780980,670) = 5780981 (odd for two channels?!)
-      signalinfo_in.length -= (signalinfo_in.length % signalinfo_in.channels); // make it multiple of channels.
-      /*
-      So we don't throw fatal error.
-      error_text += "The number of samples the effect returned is not multiple of number of channels.";
-      env->ThrowError(error_text.c_str());
-      */
-    }
-    }
-
-  const int input_AudioChannels = vi.AudioChannels();
-  // write back the resulting rate and channel count to VideoInfo format
-  vi.audio_samples_per_second = (int)(signalinfo_in.rate + 0.5); // effects can change sampling rate
-  vi.nchannels = signalinfo_in.channels; // effects can change number of channels, e.g. remix stereo to mono
-  vi.num_audio_samples = signalinfo_in.length / vi.AudioChannels();
-
-  // Clear channel speaker mask if the number of channels has been changed.
-  // Better than guessing
-  if (input_AudioChannels != vi.AudioChannels()) {
-    if (has_at_least_v10) {
-      vi.SetChannelMask(false /* mask is unknown */, 0 /* n/a */);
-    }
+    effect_s_array[i] = arg_str;
   }
 
-  // ------------------------ output ------------------------------
-  // Final 'effect' in the chain: output, copy back to Avisynth GetAudio buffer
-  e = sox_create_effect(output_handler());
-  if (!e) {
-    sox_delete_effects_chain(chain);
-    env->ThrowError("SoxFilter: error creating output handler\n");
-  }
-  avs_privdata_t priv_for_output;
-  priv_for_output.caller = this; // to access the Avisynth SoxFilter class variables 
-  *reinterpret_cast<avs_privdata_t*>(e->priv) = priv_for_output; // whole struct copy
-  sox_errno = sox_add_effect(chain, e, &signalinfo_in, &signalinfo_in);
-  free(e);
-  if (sox_errno != SOX_SUCCESS) {
-    sox_delete_effects_chain(chain);
-    env->ThrowError("Error in creating effect 'output' as output_handler: %d %s\n", sox_errno, sox_strerror(sox_errno));
-  }
+  vi_orig = vi;
+
+  rebuild_effect_chain(true, env); // true: first time
+
 }
 
 
@@ -514,6 +578,21 @@ int input_drain(sox_effect_t* effp, sox_sample_t* obuf, size_t* osamp)
   return *osamp ? SOX_SUCCESS : SOX_EOF;
 }
 
+// called once per flow
+static int input_stop(sox_effect_t* effp)
+{
+  // don't care if called for all flows
+
+  avs_privdata_t* privdata = reinterpret_cast<avs_privdata_t*>(effp->priv);
+  avs_in_info_t* avs_in_info = &privdata->caller->avs_in_info;
+
+  // Initialize input filter to force full buffer read.
+  // reset start=0, count=0
+  avs_in_info->inputbuf.setdata_info(0, 0, avs_in_info->AudioChannels);
+
+  return SOX_SUCCESS;
+}
+
 // A stub effect handler to handle inputting samples to the effects chain.
 // The only function needed is 'drain'.
 sox_effect_handler_t const* input_handler(void)
@@ -526,7 +605,7 @@ sox_effect_handler_t const* input_handler(void)
     NULL, // flow start Called to initialize effect (called once per flow)
     NULL, // Called to process samples.
     input_drain, // drain Called to finish getting output after input is complete
-    NULL, // stop Called to shut down effect (called once per flow)
+    input_stop, // stop Called to shut down effect (called once per flow)
     NULL, // kill Called to shut down effect (called once per effect)
     sizeof(avs_privdata_t) // Size of private data SoX should pre-allocate for effect
   };
@@ -534,10 +613,9 @@ sox_effect_handler_t const* input_handler(void)
 }
 
 // Special 'effect': callback to output the samples at the end of the effects chain.
-static int output_flow(sox_effect_t* effp LSX_UNUSED, sox_sample_t const* ibuf,
+static int output_flow(sox_effect_t* effp, sox_sample_t const* ibuf,
   sox_sample_t* obuf LSX_UNUSED, size_t* isamp, size_t* osamp)
 {
-  (void)effp; // unused
 
   // Debugging shows that (surprisingly) output_flow is called at the very beginning,
   // after (re)starting the effect flow, before any input drain happens. 
@@ -611,6 +689,19 @@ static int output_flow(sox_effect_t* effp LSX_UNUSED, sox_sample_t const* ibuf,
   return SOX_SUCCESS; // All samples output to the buffer successfully, but there remained some
 }
 
+// called once per flow
+static int output_stop(sox_effect_t* effp)
+{
+  avs_privdata_t* privdata = reinterpret_cast<avs_privdata_t*>(effp->priv);
+  avs_out_info_t* out_info = &privdata->caller->out_info;
+
+  // don't care if called for all flows
+  out_info->precalc_ptr = 0;
+  out_info->remaining_precalculated_samples = 0;
+
+  return SOX_SUCCESS;
+}
+
 // A stub effect handler to handle outputting samples from the effects chain.
 // The only function needed for this is 'flow'
 sox_effect_handler_t const* output_handler(void)
@@ -623,7 +714,7 @@ sox_effect_handler_t const* output_handler(void)
     NULL, // flow start Called to initialize effect (called once per flow)
     output_flow, // Called to process samples.
     NULL, // drain Called to finish getting output after input is complete
-    NULL, // stop Called to shut down effect (called once per flow)
+    output_stop, // stop Called to shut down effect (called once per flow)
     NULL, // kill Called to shut down effect (called once per effect)
     sizeof(avs_privdata_t) // Size of private data SoX should pre-allocate for effect
   };
@@ -652,23 +743,62 @@ static void DebugFilterInfos(sox_effects_chain_t* chain)
   }
 }
 
-static void RestartEffects(sox_effects_chain_t *chain, IScriptEnvironment *env) {
-  _RPT0(0, "RESTART EFFECTS!\n");
+// not used
+static void StopAndRestart(sox_effects_chain_t* chain, IScriptEnvironment* env) {
+  // stops effect once, but start each flow separately
+  
+  // Not used, bacasue "compand" effect fails somehow.
+  // For example, the soxlib effect “compand” does not initialize properly.
+  // The effect returns different data than what it calculates for the first 
+  // time. I could not figure out what else I needed to do here.
+
   for (size_t i = 0; i < chain->length; i++)
   {
     sox_effect_t* current_effect = chain->effects[i];
     _RPT1(0, "  stopping %s!\n", chain->effects[i]->handler.name);
-    sox_stop_effect(current_effect); // stops all flows, but start each flow separately
+    sox_stop_effect(current_effect);
+  }
+
+  for (size_t i = 0; i < chain->length; i++)
+  {
+    sox_effect_t* current_effect = chain->effects[i];
+    _RPT1(0, "  starting %s!\n", chain->effects[i]->handler.name);
 
     const size_t flowcount = chain->effects[i]->flows;
     for (size_t flow = 0; flow < flowcount; flow++) {
       current_effect = &chain->effects[i][flow];
       int sox_errno = (current_effect->handler.start)(current_effect);
+      /*
+      current_effect->obeg = 0;
+      current_effect->oend = 0;
+      current_effect->clips = 0;
+      current_effect->imin = 0;
+      */
       if (sox_errno != SOX_SUCCESS) {
         env->ThrowError("SoxFilter:  (%s) Could not restart filter: \n\n%d %s\n", current_effect->handler.name, sox_errno, sox_strerror(sox_errno));
       }
     }
   }
+}
+
+void SoxFilter::RestartEffects(IScriptEnvironment* env)
+{
+  _RPT0(0, "RESTART EFFECTS!\n");
+
+  if (true)
+  {
+    // this works for "compand" as well
+    sox_delete_effects_chain(chain);
+    chain = NULL;
+    rebuild_effect_chain(false, env); // false: not the first time
+  }
+  else {
+    // this does not work, e.g. compand is not initalized 100%
+    StopAndRestart(chain, env);
+  }
+
+  restarted = true;
+
   _RPT0(0, "RESTART EFFECTS done!\n");
 }
 
@@ -742,11 +872,7 @@ void __stdcall SoxFilter::GetAudio(void* buf, int64_t start, int64_t count, IScr
     // The stream is restarted every time when a sample previous to the last one is requested.
     // Q: or start != prev_start+prev_count ?
     // A: no, in such cases EnsureVBRMp3Sync requests samples from zero: start=0
-    RestartEffects(chain, env);
-    // Initialize input filter to force full buffer read
-    avs_in_info.inputbuf.setdata_info(0, 0, vi.AudioChannels()); // start=0, count = 0
-    out_info.precalc_ptr = 0;
-    out_info.remaining_precalculated_samples = 0;
+    RestartEffects(env);
     /*
     _RPT4(0, "\nSoxFilter::GetAudio: AFTER RESTART start=%d, count=%d, samplecount_mul_chn=%d next_start=%d\n",
       (int)start,
@@ -796,7 +922,7 @@ void __stdcall SoxFilter::GetAudio(void* buf, int64_t start, int64_t count, IScr
       (int)out_info.sample_count_getaudio,
       (int)out_info.remaining_precalculated_samples % vi.AudioChannels(),
       (int)avs_in_info.inputbuf.next_start());
-    
+
     int sox_errno = sox_flow_effects(chain, NULL, NULL);
 
     _RPT3(0, "SoxFilter::GetAudio: AFTER flow debug1/2: output_sample_counter_mul_chn=%d total_needed_sample_count_mul_chn=%d next_start=%d\n",
@@ -820,6 +946,15 @@ void __stdcall SoxFilter::GetAudio(void* buf, int64_t start, int64_t count, IScr
       break;
     }
   }
+
+#if 0
+  if (start == 0 && count > 0) {
+    if (restarted)
+      saveBufToFile("after.bin", buf, (int)count);
+    else
+      saveBufToFile("before.bin", buf, (int)count);
+  }
+#endif
 }
 
 // Example:
