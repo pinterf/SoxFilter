@@ -1,5 +1,5 @@
 # SoxFilter
-SoxFilter 2.1 for AviSynth by pinterf (20231201)
+SoxFilter 2.2 for AviSynth by pinterf (20240104)
 Based on Sox audio library 14.4.2
 
 As of 2023/12/01 the actual soxlib version used in the plugin (as seen in sox.h):
@@ -199,6 +199,10 @@ with such libraries, it must be distributed under the GPL.
 
 
 ## Change log
+- 20240104 v2.2 pinterf
+  - Change the way how the effect chain is reinitialized:
+    instead of stop/restart the whole chain is destructed then rebuilt from scratch.
+    Fixes the "Normalize" after SoxFilter("compand") case.
 
 - 20231203 v2.1 pinterf
   - Allow effects which can alter sampling rate
