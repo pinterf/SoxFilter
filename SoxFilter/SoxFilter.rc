@@ -1,6 +1,6 @@
 1 VERSIONINFO
- FILEVERSION 2,1,0,0
- PRODUCTVERSION 2,1,0,0
+ FILEVERSION 2,2,0,0
+ PRODUCTVERSION 2,2,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -18,14 +18,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "SoxFilter for AviSynth"
-            VALUE "FileVersion", "2, 1, 0, 0\0"
+            VALUE "FileVersion", "2, 2, 0, 0\0"
             VALUE "InternalName", "SoxFilter\0"
-            VALUE "LegalCopyright", "Copyright (C) SoxLib authors, (C)2023 Ferenc Pintér\0"
+            VALUE "LegalCopyright", "Copyright (C) SoxLib authors, (C)2023-24 Ferenc Pintér\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "SoxFilter.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "SoxFilter\0"
-            VALUE "ProductVersion", "2, 1, 0, 0\0"
+            VALUE "ProductVersion", "2, 2, 0, 0\0"
             VALUE "SpecialBuild", "\0"
         END
     END
